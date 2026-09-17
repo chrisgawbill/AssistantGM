@@ -1,0 +1,58 @@
+project: AssistantGM
+purpose: NHL franchise-management assistant powered by reusable perception from vision-engine
+framework: Next.js
+ui: React
+language: TypeScript
+router: App Router
+package_manager: pnpm
+validation: Zod
+testing: Vitest
+perception_dependency: vision-engine
+verification:
+  - pnpm typecheck
+  - pnpm test
+  - pnpm build
+boundaries:
+  owns:
+    - NHL and game-specific configuration
+    - franchise domain models and rules
+    - recommendation logic
+    - application orchestration
+    - persistence
+    - UI and correction workflows
+  delegates_to_vision_engine:
+    - image preprocessing
+    - generic OCR and vision adapters
+    - generic extraction
+    - confidence and uncertainty primitives
+    - generic perception pipeline behavior
+  forbids:
+    - duplicating generic perception logic
+    - embedding AssistantGM business rules in vision-engine
+    - premature multi-game abstraction
+    - premature AR infrastructure
+agent_context:
+  pm_reads:
+    - AGENTS.md
+    - docs/project.yaml
+    - docs/architecture.md
+    - docs/current.md
+    - active backlog ticket
+  coder_reads:
+    - AGENTS.md
+    - docs/project.yaml
+    - active ticket
+    - explicitly referenced architecture sections
+    - explicitly scoped files
+  qa_reads:
+    - active ticket acceptance criteria
+    - verification commands
+rules:
+  - work one ticket at a time
+  - prefer targeted edits
+  - do not scan the entire backlog unless PM work requires it
+  - use current.md only for active-ticket handoff
+  - reset current.md when a ticket completes
+  - keep domain logic out of UI where practical
+  - preserve recognition confidence and correction paths
+  - prefer established libraries over hand-built infrastructure
