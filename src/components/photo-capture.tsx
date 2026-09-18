@@ -6,6 +6,7 @@ import {
   processEditLinesPhoto,
   type EditLinesPhotoProcessor,
 } from "../application/process-edit-lines-photo";
+import type { EditLinesDefenseEvenStrength, EditLinesDefensePlayer, PlayerField } from "../domain/player";
 
 export const MAX_PHOTO_BYTES = 20 * 1024 * 1024;
 const PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -23,6 +24,7 @@ export function PhotoCapture({ processPhoto = processEditLinesPhoto }: PhotoCapt
   const [preview, setPreview] = useState<string>();
   const [error, setError] = useState<string>();
   const [state, setState] = useState<CaptureState>("idle");
+  const [lineup, setLineup] = useState<EditLinesDefenseEvenStrength>();
 
   useEffect(() => () => (preview ? URL.revokeObjectURL(preview) : undefined), [preview]);
 
@@ -37,6 +39,7 @@ export function PhotoCapture({ processPhoto = processEditLinesPhoto }: PhotoCapt
       return;
     }
     setPhoto(file);
+    setLineup(undefined);
     setPreview(URL.createObjectURL(file));
     setError(undefined);
     setState("selected");
@@ -47,6 +50,7 @@ export function PhotoCapture({ processPhoto = processEditLinesPhoto }: PhotoCapt
     setPreview(undefined);
     setError(undefined);
     setState("idle");
+    setLineup(undefined);
   }
 
   async function submit() {
@@ -54,7 +58,7 @@ export function PhotoCapture({ processPhoto = processEditLinesPhoto }: PhotoCapt
     setState("processing");
     setError(undefined);
     try {
-      await processPhoto({ sourcePhoto: photo, workflow: EDIT_LINES_WORKFLOW });
+      setLineup(await processPhoto({ sourcePhoto: photo, workflow: EDIT_LINES_WORKFLOW }));
       setState("selected");
     } catch {
       setError("We could not process that photo. Try again or choose another photo.");
@@ -87,11 +91,43 @@ export function PhotoCapture({ processPhoto = processEditLinesPhoto }: PhotoCapt
         </button>
       )}
       {state === "processing" && <p role="status">Processing photo…</p>}
+      {lineup && <LineupResult lineup={lineup} />}
       {error && (
         <p role="alert">
           {error} {photo && <button type="button" onClick={submit}>Retry</button>}
         </p>
       )}
+    </section>
+  );
+}
+
+function fieldValue<T>(field: PlayerField<T>): string {
+  return field.status === "known" && field.value !== undefined ? String(field.value) : field.status;
+}
+
+function PlayerSlot({ label, player }: { label: string; player: EditLinesDefensePlayer }) {
+  return (
+    <div>
+      <h4>{label}</h4>
+      <p>Name: {fieldValue(player.name)}</p>
+      <p>Side: {fieldValue(player.displayedSide)}</p>
+      <p>Overall: {fieldValue(player.overall)}</p>
+    </div>
+  );
+}
+
+function LineupResult({ lineup }: { lineup: EditLinesDefenseEvenStrength }) {
+  return (
+    <section aria-labelledby="lineup-result-title">
+      <h3 id="lineup-result-title">Defense / Even Strength lineup</h3>
+      {lineup.pairings.map((pairing, index) => (
+        <article key={index}>
+          <h4>Pairing {index + 1}</h4>
+          <PlayerSlot label="Left" player={pairing.left} />
+          <PlayerSlot label="Right" player={pairing.right} />
+          <p>Impact: {fieldValue(pairing.chemistryOrImpact)}</p>
+        </article>
+      ))}
     </section>
   );
 }
