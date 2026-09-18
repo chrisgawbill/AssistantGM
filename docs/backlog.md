@@ -73,27 +73,58 @@ Requires the relevant `vision-engine` package/export ticket to be complete.
 
 ---
 
-## AG-3 — First NHL screen configuration
+## AG-3 — NHL 27 Edit Lines configuration
 
 ### Goal
 
-Define one concrete NHL franchise-mode screen that AssistantGM can ask `vision-engine` to extract.
+Define AssistantGM's first real game-specific ingestion target: a **phone camera photo of the NHL 27 Franchise Mode "Edit Lines" screen**.
+
+AssistantGM should define what the visible Edit Lines data means. `vision-engine` remains responsible for generic perception and must not learn NHL/player/lineup semantics.
+
+### Input Assumption
+
+The primary input is **not** a clean game screenshot. It is a handheld phone photo of a TV/monitor displaying NHL 27's Edit Lines screen.
+
+The configuration must therefore avoid assuming that:
+
+- the game UI fills the entire input image
+- the display is perfectly square to the camera
+- absolute pixel coordinates are stable between photos
+- lighting, glare, crop, perspective, rotation, or display artifacts are identical between captures
+
+For the first workflow, AssistantGM may already know the user is scanning the Edit Lines screen. Automatic screen classification is not required by this ticket.
 
 ### Scope
 
-- choose one initial roster/player-list screen
-- define its expected fields using game-specific configuration
-- map generic extracted fields to AssistantGM domain terminology
-- add fixture-driven tests for the configuration/mapping
+- define `edit-lines` as the first supported NHL 27 Franchise Mode screen type
+- identify the smallest useful visible structures from that screen, starting with the normal forward lines and/or defense pairings actually visible in the chosen capture
+- define typed AssistantGM concepts for the visible structure, such as line/pairing, slot, player reference, and only the player attributes actually shown and needed by the first workflow
+- define game-specific mapping/configuration that translates generic Vision Engine region/record/field output into those AssistantGM concepts
+- preserve recognition confidence/uncertainty during the mapping
+- use at least one representative real phone-camera photo during development/manual evaluation to expose real capture problems
+- keep deterministic automated tests based on legally safe fixtures or mocked generic Vision Engine output rather than depending on a proprietary game screenshot being committed to the public repository
+- document any concrete perception failure discovered from the real camera photo so it can become a narrowly scoped `vision-engine` requirement instead of being reimplemented in AssistantGM
 
-Start with a small useful set of fields rather than every visible value.
+Start with a small useful subset of the Edit Lines screen rather than every line type, tab, attribute, or visible value.
+
+### Constraints
+
+- do not hard-code generic OCR, image cleanup, perspective correction, detection, or geometry algorithms in AssistantGM
+- do not require automatic recognition that the image is an Edit Lines screen
+- do not design the full lineup optimizer in this ticket
+- do not assume a fixed camera position or fixed source-image pixel coordinates
+- NHL 27 labels and domain mappings belong here; reusable perception fixes belong in `vision-engine`
 
 ### Acceptance Criteria
 
-- screen configuration is separate from UI code
-- NHL-specific labels/mappings remain in AssistantGM
-- generic recognition behavior is not duplicated from `vision-engine`
-- tests prove representative generic extraction output maps into typed AssistantGM data
+- `edit-lines` has a clear typed game configuration/domain mapping separate from UI code
+- NHL-specific line/player terminology remains in AssistantGM
+- representative generic Vision Engine output maps deterministically into typed Edit Lines data
+- confidence/missing/ambiguous values remain explicit through the mapping
+- the design supports a phone photo whose TV/game content occupies only part of the source image
+- no generic recognition/preprocessing implementation is duplicated from `vision-engine`
+- at least one real phone-photo trial is documented with any engine limitations discovered
+- automated tests pass without requiring copyrighted NHL 27 imagery in the public repository
 
 ---
 
