@@ -256,6 +256,57 @@ This is the first end-to-end perception proof: **photo → Vision Engine → Ass
 
 ---
 
+## AG-5A — Integrate latest Vision Engine phone-photo pipeline
+
+### Goal
+
+Close the perception gap discovered in AG-5 by upgrading AssistantGM to the first published Vision Engine release that includes the newer phone-photo capabilities, then prove those capabilities against the real NHL 27 Edit Lines capture before moving on to correction/advice UI.
+
+This ticket is integration work, not a new AssistantGM perception implementation.
+
+### Dependency
+
+Requires a published `@chrisgawbill/vision-engine` release containing the completed VE-16 geometry-aware extraction and VE-20 display isolation / perspective normalization APIs.
+
+### Scope
+
+- update AssistantGM from its current Vision Engine package version to the published release containing VE-16 through VE-20
+- update the lockfile and verify the package root exposes the required public APIs
+- integrate `DisplayIsolationDetector` into the Edit Lines photo-processing path
+- use the normalized display image/geometry as the basis for the existing Defense / Even Strength extraction flow
+- update the Edit Lines extraction configuration to use Vision Engine spatial extraction primitives where they reduce brittle full-image/manual-region assumptions
+- keep all display isolation, perspective normalization, OCR, and generic spatial extraction inside Vision Engine
+- preserve the AG-5 typed lineup result and confidence/missing/ambiguous behavior
+- rerun the representative real NHL 27 phone-photo trial
+- document:
+  - whether the TV/display was isolated successfully
+  - whether perspective normalization improved the usable image
+  - which player/pairing fields were recognized correctly
+  - which fields remain missing/uncertain
+  - any new generic Vision Engine blocker revealed by the real photo
+- keep automated tests deterministic with mocked/legal-safe inputs rather than committing proprietary NHL imagery
+
+### Constraints
+
+- do not copy VE-16/VE-20 implementation into AssistantGM
+- do not add AssistantGM-specific image-processing algorithms
+- do not work around a generic engine failure with hard-coded source-photo coordinates
+- do not start AG-6 correction UI until this integration path produces the best available structured lineup from the real photo
+- do not add recommendation or persistence logic
+- if a new generic perception limitation appears, document it as a narrowly scoped Vision Engine follow-up rather than expanding this ticket
+
+### Acceptance Criteria
+
+- AssistantGM uses the published Vision Engine release containing VE-16 and VE-20 rather than the older package version
+- the real Edit Lines phone photo passes through display isolation/perspective normalization before lineup extraction when detection succeeds
+- spatial extraction uses Vision Engine public APIs rather than AssistantGM CV logic
+- the application still returns the existing typed three-pairing lineup contract
+- missing/uncertain fields remain explicit; no values are fabricated to make the trial pass
+- the real-photo trial result is documented clearly enough to decide whether AG-6 can proceed or another engine ticket is required
+- typecheck, tests, and production build pass
+
+---
+
 ## AG-6 — Edit Lines verification and correction
 
 ### Goal
