@@ -4,33 +4,27 @@ This file is temporary handoff context for the active ticket only.
 
 ## Active Ticket
 
-AG-2 — Vision Engine dependency boundary
+None.
 
 ## Decisions
 
-- Use the intended public `vision-engine` package/export only; no provider-internal imports.
-- Keep the integration wrapper narrow and deterministic tests mocked.
+None.
 
 ## Files Touched
 
-- `package.json`
-- `src/application/vision-engine.ts`
-- `src/application/vision-engine.test.ts`
-- `docs/vision-engine.md`
+None.
 
 ## Verification
 
-- Coder: Vitest smoke test PASS, direct TypeScript check PASS, public-boundary scan PASS, `git diff --check` PASS.
-- QA: AG-2 acceptance criteria PASS; no internal imports or secrets found.
-- `pnpm-lock.yaml` regeneration blocked by npm registry DNS timeout.
+None.
 
 ## Blockers
 
-- `pnpm-lock.yaml` still lacks `@chrisgawbill/vision-engine`; npm metadata is not reachable in this environment.
+None.
 
 ## Next Action
 
-- Restore npm registry access, regenerate the lockfile, then rerun `pnpm install`, `pnpm typecheck`, and `pnpm test`.
+Select the next active ticket.
 
 ## Reset Rule
 
