@@ -1,11 +1,27 @@
 import type { ExtractedField } from "@chrisgawbill/vision-engine";
 
-export type PlayerPosition = "C" | "LW" | "RW" | "LD" | "RD" | "G";
+export type DefenseSide = "LD" | "RD";
 
 export type PlayerField<T> = Omit<ExtractedField, "value"> & { value?: T };
 
-export type NhlRosterPlayer = {
+export type EditLinesDefensePlayer = {
   name: PlayerField<string>;
-  position: PlayerField<PlayerPosition>;
+  displayedSide: PlayerField<DefenseSide>;
   overall: PlayerField<number>;
+};
+
+export type PairingImpact = number | string;
+
+export type EditLinesDefensePairing = {
+  left: EditLinesDefensePlayer;
+  right: EditLinesDefensePlayer;
+  chemistryOrImpact: PlayerField<PairingImpact>;
+};
+
+export type EditLinesDefenseEvenStrength = {
+  pairings: readonly [
+    EditLinesDefensePairing,
+    EditLinesDefensePairing,
+    EditLinesDefensePairing,
+  ];
 };
