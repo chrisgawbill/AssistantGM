@@ -128,140 +128,277 @@ Start with a small useful subset of the Edit Lines screen rather than every line
 
 ---
 
-## AG-4 — Screenshot upload workflow
+## AG-3A — Align merged AG-3 implementation with Edit Lines
 
 ### Goal
 
-Allow a user to choose an image and send it through the first configured recognition flow.
+Reconcile the already-merged AG-3 implementation with the actual first product target: **NHL 27 Franchise Mode → Edit Lines → Defense / Even Strength**, photographed from a phone.
+
+The current merged implementation still models a generic roster-player list. Replace that scaffold with the smallest real Edit Lines domain/configuration shape needed by AG-4 through AG-7.
 
 ### Scope
 
-- simple screenshot upload/select UI
-- image preview
-- basic client/server input validation
-- call the application-layer process-screenshot use case
-- use the `vision-engine` integration boundary
-- display loading, success, and failure states
+- replace/retire the current `nhl-roster-player-list` configuration and fixture naming
+- define the first supported view as `edit-lines-defense-even-strength`
+- model three defensive pairings with explicit left/right defense slots
+- for each visible player slot, support the first reliable fields:
+  - player name
+  - displayed position/side
+  - overall
+- support the visible pairing chemistry/line-impact value when available, preserving missing/uncertain state when it is not
+- preserve Vision Engine confidence/status metadata through the mapping
+- keep screen/view identity and NHL terminology in AssistantGM
+- remove the assumption that the source image itself is a fixed 1920×1080 clean screenshot
+- keep automated tests deterministic using mocked/generic Vision Engine output
+- document any real-phone-photo perception gap as a Vision Engine requirement instead of implementing generic CV here
+
+### Constraints
+
+- no OCR, perspective correction, display detection, image cleanup, or generic geometry algorithms in AssistantGM
+- no lineup optimization yet
+- no automatic screen classification
+- do not expand to forwards, power play, penalty kill, or every visible side panel in this ticket
+- the real camera photo may be used manually during development but should not be committed as a public test fixture
 
 ### Acceptance Criteria
 
-- supported image can be selected and previewed
-- invalid input fails clearly
-- UI does not directly call recognition provider internals
-- recognition failures do not crash the page
+- the first typed screen model represents three Defense / Even Strength pairings rather than a generic player list
+- each pairing preserves slot identity and player-field confidence/uncertainty
+- no fixed full-source 1920×1080 assumption remains in AssistantGM's domain/configuration contract
+- deterministic tests map generic engine output into the Edit Lines model
+- obsolete roster-player-list naming/configuration is removed or clearly retired
+- any blocker caused by camera-photo perception is documented for Vision Engine rather than duplicated locally
 
 ---
 
-## AG-5 — Structured extraction result
+## AG-4 — Phone photo capture / upload workflow
 
 ### Goal
 
-Turn recognition output into a typed AssistantGM representation for the first NHL screen.
+Let a user take or select a **phone photo of the NHL 27 Edit Lines screen**, preview it, and submit the original image into the AssistantGM processing boundary.
+
+This ticket proves the product input experience; it does not need to make OCR accurate by itself.
 
 ### Scope
 
-- application use case maps generic engine output through the game configuration
-- define the minimum domain model needed for the first screen
-- preserve confidence/uncertainty metadata
-- show extracted values in a readable review surface
+- add a mobile-friendly photo input that can use the device camera where the browser supports it
+- keep normal file/photo selection as a fallback
+- preview the selected photo before processing
+- validate supported file type and reasonable input size
+- explicitly treat the selected workflow as `edit-lines-defense-even-strength`; automatic screen detection is not required
+- submit the untouched source photo to an application-layer `processEditLinesPhoto` boundary
+- route perception through the existing Vision Engine integration rather than provider internals
+- show clear idle, selected, processing, and failure states
+- allow the user to replace/retry the photo
+
+### Constraints
+
+- do not crop/rectify the TV screen with custom AssistantGM CV code
+- do not implement automatic screen classification
+- do not add persistence or recommendation logic
+- do not require a native mobile app; prove the flow in the existing web app first
+- do not commit proprietary NHL 27 images as automated fixtures
 
 ### Acceptance Criteria
 
-- no silent defaults for missing recognition values
-- low-confidence/missing values remain explicit
-- domain mapping is covered by deterministic tests
-- UI renders structured values rather than raw OCR/provider payloads
+- a phone user can invoke camera/photo selection from the web UI where supported
+- a selected image is previewed and can be replaced
+- invalid/oversized input fails clearly
+- the original image reaches the application processing boundary
+- UI code does not import OCR/provider internals
+- processing failures are recoverable and do not crash the page
+- deterministic UI/application tests do not require real OCR or NHL imagery
 
 ---
 
-## AG-6 — Review and correction flow
+## AG-5 — Edit Lines photo → structured lineup
 
 ### Goal
 
-Let the user correct recognized values before AssistantGM accepts them as franchise state.
+Process one real-world Edit Lines phone photo into the typed Defense / Even Strength lineup created in AG-3A.
+
+This is the first end-to-end perception proof: **photo → Vision Engine → AssistantGM lineup data**.
 
 ### Scope
 
-- editable review UI
-- visually identify values that need confirmation
-- validate corrected values
-- separate raw recognition output from confirmed product data
-- submit a confirmed result to the application layer
+- implement the application use case that sends the photo through the Vision Engine integration
+- use the AG-3A Edit Lines configuration/mapping
+- return three defensive pairings with left/right player slots
+- map the first proven visible fields:
+  - player name
+  - displayed position/side
+  - overall
+  - pairing chemistry/impact value when reliably extractable
+- preserve confidence/status/source information for every recognized value
+- keep raw provider payloads out of AssistantGM domain/UI contracts
+- manually evaluate at least one real phone photo of the Edit Lines screen
+- if the real photo exposes a generic perception requirement (display isolation, perspective correction, spatial extraction, stronger detection, etc.), document/create the narrow Vision Engine follow-up rather than implementing it in AssistantGM
+- render a simple read-only structured lineup result sufficient to inspect whether extraction worked
+
+### Constraints
+
+- no user correction UI yet
+- no recommendation logic yet
+- no persistence
+- do not silently manufacture missing players/values
+- do not bypass Vision Engine with AssistantGM-specific OCR/CV
+- do not expand to every Edit Lines tab/view
 
 ### Acceptance Criteria
 
-- user can correct extracted values
-- uncertain fields are discoverable
+- one application call can turn a submitted Edit Lines photo into the typed lineup result
+- pairings/slots remain structurally identifiable even when some fields are missing
+- confidence/missing/ambiguous/invalid values remain explicit
+- the UI displays structured lineup data rather than raw OCR text
+- one real phone-photo trial and its outcome are documented
+- any generic perception blocker is isolated as a Vision Engine requirement
+- automated tests remain deterministic and legally safe
+
+---
+
+## AG-6 — Edit Lines verification and correction
+
+### Goal
+
+Let the user verify/correct the recognized defensive pairings before AssistantGM uses them for advice.
+
+The review experience should resemble a lineup, not a generic key/value form.
+
+### Scope
+
+- display the captured photo alongside or readily accessible from the recognized lineup
+- render three defensive pairings with distinct left/right player slots
+- make recognized player name, position/side, overall, and proven pairing chemistry values editable
+- visually emphasize uncertain, missing, ambiguous, or invalid values
+- validate corrections against the AssistantGM Edit Lines domain schema
+- preserve the difference between recognized values and user-confirmed values
+- submit a fully reviewed/confirmed lineup to the application layer
+- allow confirmation when optional fields remain unavailable, as long as required advice inputs are explicit
+
+### Constraints
+
+- do not persist franchise state yet
+- do not generate advice from unconfirmed recognition values
+- do not expose provider-native data in the UI
+- keep correction/domain rules outside presentation components where practical
+
+### Acceptance Criteria
+
+- the user can correct individual player slots without editing an opaque raw payload
+- uncertain fields are obvious
 - invalid corrections are rejected clearly
-- confirmed data no longer depends on the recognition provider payload shape
+- the photo remains available as visual reference during review
+- confirmation produces a typed, provider-independent Edit Lines lineup
+- tests cover corrections and confidence/status transitions
 
 ---
 
-## AG-7 — Persist franchise state
+## AG-7 — First immediate Edit Lines advice
 
 ### Goal
 
-Store confirmed screenshot-derived data so the user can build a franchise record over time.
+Complete the first product magic trick:
+
+**take photo → recognize lineup → verify → receive one useful, explainable AssistantGM observation/recommendation immediately.**
+
+Persistence is not required before advice.
 
 ### Scope
 
-- choose the smallest persistence implementation that satisfies the product need
-- add repository interfaces at the application/domain boundary
-- persist confirmed first-screen data
-- load existing franchise state
-- define replacement/merge behavior explicitly
+- create one small deterministic domain advice service for the confirmed Defense / Even Strength lineup
+- use only fields proven reliable by AG-5/AG-6
+- start with an explainable rule such as:
+  - flag a confirmed left/right slot-position mismatch when present, otherwise
+  - identify a confirmed negative-chemistry pairing as the first pairing to review
+- return the evidence used by the rule
+- return an explicit insufficient-data/no-obvious-issue state when the rule cannot make a supported recommendation
+- present the advice directly after lineup confirmation
+
+### Constraints
+
+- do not claim to have globally optimized the lineup
+- do not invent hidden player attributes, chemistry formulas, morale, or game mechanics
+- do not use an LLM to replace deterministic domain evidence in the first rule
+- UI presents advice; domain/application code owns the rule
+- missing data must not produce fabricated advice
 
 ### Acceptance Criteria
 
-- confirmed data survives the intended persistence boundary
-- recognition output is not persisted as opaque provider blobs when normalized data is sufficient
-- persistence code contains no recommendation/domain decision logic
-- tests cover save/load behavior
+- a confirmed single Edit Lines scan can produce advice without saved franchise history
+- every recommendation/observation includes the concrete pairing/slot evidence that caused it
+- unsupported cases return insufficient-data/no-obvious-issue rather than guessing
+- the rule is deterministic and domain-tested
+- the complete first loop is demonstrable: photo → structured lineup → correction → advice
 
 ---
 
-## AG-8 — First explainable AssistantGM recommendation
+## AG-8 — Persist confirmed franchise lineup state
 
 ### Goal
 
-Use confirmed franchise data to produce one small, understandable management recommendation.
+Save confirmed Edit Lines data so future scans and recommendations can build a persistent picture of the user's franchise.
 
 ### Scope
 
-Pick a recommendation that can be explained from available data without requiring a large optimization engine.
+- choose the smallest persistence implementation appropriate to the current web MVP
+- define a narrow repository interface at the application/data boundary
+- persist the confirmed Defense / Even Strength lineup, screen/view identity, and capture/confirmation timestamp
+- load the latest confirmed lineup
+- define replacement/history behavior explicitly for a newly confirmed scan of the same view
+- store normalized AssistantGM domain data; keep raw OCR/provider blobs out unless a concrete debugging requirement justifies specific metadata
+- keep advice logic independent of storage implementation
 
-- implement domain-level recommendation rule/service
-- include the evidence/reason for the recommendation
-- present it clearly in the UI
-- distinguish insufficient-data state from a recommendation
+### Constraints
+
+- no accounts/multi-user system unless already required by deployment
+- no large database abstraction
+- no recommendation rules inside persistence code
+- do not persist unconfirmed recognition as canonical franchise state
 
 ### Acceptance Criteria
 
-- recommendation logic is deterministic and domain-tested
-- UI does not contain the rule itself
-- recommendation includes an explanation tied to known data
-- missing data does not produce fabricated advice
+- confirmed lineup state survives the chosen persistence boundary
+- the latest confirmed Defense / Even Strength lineup can be loaded
+- recognition/provider internals are not the persisted domain contract
+- replacement/history behavior is deterministic and tested
+- AG-7 advice can operate on confirmed data regardless of whether it came directly from review or was loaded from storage
 
 ---
 
-## AG-9 — Additional screen ingestion
+## AG-9 — Second Edit Lines view: Forwards / Even Strength
 
 ### Goal
 
-Prove the architecture handles a second NHL franchise screen without redesigning the recognition stack.
+Prove the architecture generalizes within the same NHL 27 Edit Lines family before adding a completely different Franchise Mode screen.
+
+Use **Forwards / Even Strength** as the second view.
 
 ### Scope
 
-- add a second game screen configuration
-- reuse the existing engine/integration workflow
-- map new information into existing or minimally extended domain state
-- update review/correction flow as necessary
+- add a `edit-lines-forwards-even-strength` game configuration/domain mapping
+- model the visible forward lines and their LW/C/RW slots using the same patterns established for defense
+- reuse the same phone photo intake and Vision Engine integration
+- reuse the same confidence, review/correction, and confirmation approach
+- extend advice only where the already-proven deterministic rule generalizes cleanly; otherwise return structured confirmed data without inventing a new optimizer
+- persist the confirmed forward-line state through the AG-8 repository boundary
+- document any new generic Vision Engine requirement exposed by the denser three-player line layout
+
+### Constraints
+
+- no copy-pasted perception pipeline
+- no automatic tab/screen classification yet
+- no special teams in this ticket
+- no full roster optimizer
+- generic image/perception improvements still belong in Vision Engine
 
 ### Acceptance Criteria
 
-- no copy-pasted recognition pipeline
-- second screen primarily requires configuration/domain mapping, not engine redesign
-- shared behavior remains tested
+- the app can process and review a Forwards / Even Strength phone photo through the existing workflow
+- line/slot semantics are game configuration/domain concerns, not Vision Engine concepts
+- the second view primarily adds configuration/mapping rather than a second processing architecture
+- existing Defense flow remains intact
+- shared intake, confirmation, persistence, and applicable advice behavior are reused
+- tests prove the architecture handles both Edit Lines views
 
 ---
 
@@ -284,6 +421,6 @@ Only detail these after the screenshot workflow is reliable:
 
 The near-term milestone is not “build an AI GM.” It is:
 
-**Screenshot -> trustworthy structured franchise data -> user confirmation -> one useful explainable recommendation.**
+**Phone photo -> trustworthy Edit Lines data -> user confirmation -> immediate explainable advice -> persistent franchise state.**
 
 Prove that loop before expanding the platform.
