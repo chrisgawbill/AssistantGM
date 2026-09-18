@@ -43,6 +43,14 @@ const sides: Record<string, DefenseSide> = {
   RIGHT: "RD",
 };
 
+function missingField(name: string): ExtractedField {
+  return {
+    status: "missing",
+    confidence: { score: 0, certainty: "missing", reasons: [`${name} was not recognized`] },
+    reason: `${name} was not recognized`,
+  };
+}
+
 function typedField<T>(field: ExtractedField, isValid: (value: unknown) => value is T): PlayerField<T> {
   if (field.status !== "known" || isValid(field.value)) return field as PlayerField<T>;
   return {
@@ -74,18 +82,20 @@ const impactField = (field: ExtractedField) =>
   );
 
 function player(fields: Record<string, ExtractedField>, side: "left" | "right"): EditLinesDefensePlayer {
+  const field = (name: string) => fields[name] ?? missingField(name);
   return {
-    name: stringField(fields[`${side}PlayerName`]),
-    displayedSide: sideField(fields[`${side}DisplayedSide`]),
-    overall: overallField(fields[`${side}Overall`]),
+    name: stringField(field(`${side}PlayerName`)),
+    displayedSide: sideField(field(`${side}DisplayedSide`)),
+    overall: overallField(field(`${side}Overall`)),
   };
 }
 
 function pairing(fields: Record<string, ExtractedField>): EditLinesDefensePairing {
+  const impact = fields.chemistryOrImpact ?? missingField("chemistryOrImpact");
   return {
     left: player(fields, "left"),
     right: player(fields, "right"),
-    chemistryOrImpact: impactField(fields.chemistryOrImpact),
+    chemistryOrImpact: impactField(impact),
   };
 }
 

@@ -13,3 +13,10 @@ larger phone photo and expose uncertainty for small text affected by glare and
 perspective. AssistantGM does not implement that preprocessing or detection;
 the Edit Lines mapping keeps those values missing or ambiguous when returned
 that way.
+
+AG-5 outcome: the application path produced the typed three-pairing lineup
+shape and preserved missing values, but the current generic detector exposed
+only a display/content region and did not provide reliable pairing regions or
+field extraction for this photo. The narrow Vision Engine follow-up is
+display isolation plus perspective-aware spatial extraction for Edit Lines
+regions; no AssistantGM OCR/CV was added.

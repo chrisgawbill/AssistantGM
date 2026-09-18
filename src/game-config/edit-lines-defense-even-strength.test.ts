@@ -35,4 +35,13 @@ describe("Edit Lines defense / even-strength screen", () => {
     expect(impact.reason).toContain("No pairing impact");
     expect(impact.confidence.certainty).toBe("missing");
   });
+
+  it("keeps all three pairing slots when a region or field is missing", () => {
+    const lineup = mapEditLinesDefenseEvenStrength({ regions: {} });
+
+    expect(lineup.pairings).toHaveLength(3);
+    expect(lineup.pairings[2].left.name.status).toBe("missing");
+    expect(lineup.pairings[2].right.overall.status).toBe("missing");
+    expect(lineup.pairings[2].chemistryOrImpact.status).toBe("missing");
+  });
 });

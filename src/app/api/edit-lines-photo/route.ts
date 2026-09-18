@@ -15,9 +15,9 @@ export async function POST(request: Request) {
     import("@chrisgawbill/vision-engine"),
     import("../../../application/vision-engine-edit-lines-photo"),
   ]);
-  const result = await processEditLinesPhotoWithVisionEngine(
+  const lineup = await processEditLinesPhotoWithVisionEngine(
     { sourcePhoto: photo, workflow } satisfies EditLinesPhotoRequest,
     { provider: new TesseractOcrProvider(), detector: new ContentBoundsDetector() },
   );
-  return NextResponse.json(result);
+  return NextResponse.json(lineup);
 }
