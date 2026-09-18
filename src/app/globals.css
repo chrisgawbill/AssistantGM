@@ -12,3 +12,16 @@ main {
   margin: 0 auto;
   padding: 4rem 1.5rem;
 }
+
+section {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  max-height: 24rem;
+  object-fit: contain;
+}

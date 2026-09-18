@@ -14,6 +14,7 @@
   "dependencies": {
     "@chrisgawbill/vision-engine": "0.1.0",
     "next": "14.2.30",
+    "optional": "^0.1.4",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
