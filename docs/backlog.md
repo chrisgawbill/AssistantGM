@@ -453,6 +453,122 @@ Use **Forwards / Even Strength** as the second view.
 
 ---
 
+## Dependency Maintenance
+
+Baseline (AG-UPG, 2026-09-18): next 16.3.5, eslint-config-next 16.3.5, react/react-dom 19.3.0, eslint 9.39.5, pnpm 11.26.0, local Node 26.8.2. pnpm `minimumReleaseAge` stays enabled; only `@chrisgawbill/*` is excluded.
+
+`@chrisgawbill/vision-engine` 0.1.0 → latest is owned by **AG-5A**, not these tickets.
+
+Each ticket is toolchain-only: no feature changes, and `src/` edits only where a breaking API change forces them. Verification for every ticket: `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm lint`, `pnpm build`, then `pnpm start` serving `/` and `/api/edit-lines-photo`.
+
+---
+
+## AG-DEP-1 — Node runtime pin + @types/node
+
+### Goal
+
+Make the supported Node version explicit and align `@types/node` with it.
+
+### Scope
+
+- pick the target Node major (local is 26; confirm Next 16 `>=20.9.0` and Vitest 5 `^22.12 || ^24 || >=26` both accept it)
+- add `engines.node` to `package.json` (and `.nvmrc` / `.node-version` if useful for local tooling)
+- upgrade `@types/node` 22.10.2 → the latest release of the chosen Node major, pinned exactly
+
+### Constraints
+
+- do not use `@types/node` for a newer major than the runtime
+- no CI/deployment changes beyond the version pin
+
+### Acceptance Criteria
+
+- `engines.node` and `@types/node` major match
+- all standard verification commands pass
+
+---
+
+## AG-DEP-2 — Vitest 2 → 5
+
+### Goal
+
+Move tests to the current Vitest major.
+
+### Dependency
+
+AG-DEP-1 (Vitest 5 peer-requires `@types/node` `^22 || >=24` and Node `^22.12 || ^24 || >=26`).
+
+### Scope
+
+- upgrade `vitest` 2.1.9 → latest 5.x, pinned exactly
+- add `vite` explicitly only if Vitest 5 requires it as an installed peer (`^6.4 || ^7 || ^8`)
+- apply the Vitest 3, 4, and 5 migration-guide changes that affect this repo (config, mocking, and environment APIs)
+- keep the existing 10 tests and their assertions; change test code only where an API changed
+
+### Constraints
+
+- no new test frameworks or coverage tooling
+- do not weaken or delete tests to get a green run
+
+### Acceptance Criteria
+
+- `pnpm test` runs on Vitest 5 with the same test count (6 files, 10 tests at baseline) all passing
+- all standard verification commands pass
+
+---
+
+## AG-DEP-3 — TypeScript 5.7 → 6.0
+
+### Goal
+
+Move to the newest TypeScript version that the lint toolchain supports.
+
+### Scope
+
+- upgrade `typescript` 5.7.2 → latest 6.0.x, pinned exactly
+- fix any new type errors or `tsconfig.json` deprecations surfaced by TS 6
+- confirm `next build` type-checking and `typescript-eslint` both accept the version
+
+### Constraints
+
+- **not TypeScript 7**: `eslint-config-next` 16.3.5 depends on `typescript-eslint` ^8, which peer-requires `typescript >=4.8.4 <6.1.0`
+- no loosening of `strict` or other compiler options to silence errors
+
+### Acceptance Criteria
+
+- TypeScript 6.0.x is installed with no peer-dependency warnings from `typescript-eslint`
+- all standard verification commands pass
+
+---
+
+## AG-DEP-4 — ESLint 10 and TypeScript 7 (blocked)
+
+### Goal
+
+Finish the toolchain upgrade once the Next.js lint ecosystem supports these versions.
+
+### Blockers (as of 2026-09-18)
+
+- ESLint 10.x: `eslint-plugin-react` 7.x and `eslint-plugin-jsx-a11y` 6.x (both pulled in by `eslint-config-next` 16.3.5) peer-support eslint only up to ^9
+- TypeScript 7.x: `typescript-eslint` 8.x peer-supports `typescript <6.1.0`
+
+### Scope (once unblocked)
+
+- upgrade `eslint-config-next` / `next` to a release whose plugin chain supports ESLint 10 and/or TS 7
+- upgrade `eslint` → 10.x and/or `typescript` → 7.x, pinned exactly
+- adjust `eslint.config.mjs` / `tsconfig.json` only as their migration guides require
+
+### Constraints
+
+- do not force-install past peer ranges, and do not add `overrides` or `peerDependencyRules` to hide mismatches
+- the two upgrades may land separately as each is unblocked
+
+### Acceptance Criteria
+
+- `pnpm install` reports no peer-dependency warnings
+- all standard verification commands pass
+
+---
+
 ## Later Backlog
 
 Only detail these after the screenshot workflow is reliable:

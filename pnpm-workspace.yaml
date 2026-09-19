@@ -1,0 +1,8 @@
+allowBuilds:
+  esbuild: true
+  sharp: false
+  tesseract.js: false
+  unrs-resolver: true
+
+minimumReleaseAgeExclude:
+  - '@chrisgawbill/*'
