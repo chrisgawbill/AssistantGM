@@ -10,8 +10,15 @@ engine paths.
 
 ## Edit Lines photo requirement
 
-AssistantGM's `edit-lines-defense-even-strength` configuration defines logical
-pairing regions without assuming the source photo is a fixed-size screenshot.
-The Vision Engine must eventually detect/isolate the game display and resolve
-those regions for a perspective phone photo before region-scoped extraction can
-be reliable. AssistantGM does not implement that perception behavior.
+The Edit Lines photo path (`src/application/vision-engine-edit-lines-photo.ts`)
+runs the untouched source photo through Vision Engine's
+`DisplayIsolationDetector` (display isolation / perspective normalization,
+VE-20) before lineup extraction. When isolation succeeds, the
+`edit-lines-defense-even-strength` game-config resolves its three pairing
+regions and per-field spatial sources as fractions of the isolated display's
+own pixel dimensions (`DisplayDetectionResult.geometry.display`) — never a
+fixed or assumed source-photo resolution. When isolation is missing or
+ambiguous, the path falls back to Vision Engine's existing auto-detection on
+the untouched source photo instead of applying pairing-region assumptions to
+an unresolved display; the isolation outcome is always returned to the
+caller so that failure stays explicit rather than being silently absorbed.

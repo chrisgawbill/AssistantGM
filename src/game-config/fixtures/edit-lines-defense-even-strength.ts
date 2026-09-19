@@ -14,14 +14,14 @@ const missing = (): ExtractedField => ({
   reason: "No pairing impact was recognized",
 });
 
-const pairing = (leftName: string, leftSide: string, rightName: string, rightSide: string, impact: ExtractedField) => ({
+// Names use the game's own "Initial. Surname" display shape (e.g. "C. MAKAR"),
+// matching what the real screen shows and what game-config validation expects.
+const pairing = (leftName: string, leftOverall: number, leftSide: string, rightName: string, rightOverall: number, rightSide: string, impact: ExtractedField) => ({
   fields: {
     leftPlayerName: known(leftName),
-    leftDisplayedSide: known(leftSide),
-    leftOverall: known(leftName === "Cale Makar" ? 94 : 92),
+    leftSideOverallLine: known(`${leftSide} | ${leftOverall} OVR`),
     rightPlayerName: known(rightName),
-    rightDisplayedSide: known(rightSide),
-    rightOverall: known(rightName === "Devon Toews" ? 91 : 89),
+    rightSideOverallLine: known(`${rightSide} | ${rightOverall} OVR`),
     chemistryOrImpact: impact,
   },
 });
@@ -31,21 +31,21 @@ export const representativeEditLinesExtraction: Pick<PipelineResult, "regions"> 
     "pairing-1": {
       region: { id: "pairing-1", bounds: { x: 1, y: 1, width: 1, height: 1 } },
       recognition: { text: "fixture", provider: "fixture-ocr" },
-      ...pairing("Cale Makar", "LD", "Devon Toews", "RD", known("Elite")),
+      ...pairing("C. MAKAR", 94, "LD", "D. TOEWS", 91, "RD", known("+2")),
       valid: true,
       issues: [],
     },
     "pairing-2": {
       region: { id: "pairing-2", bounds: { x: 1, y: 1, width: 1, height: 1 } },
       recognition: { text: "fixture", provider: "fixture-ocr" },
-      ...pairing("Bowen Byram", "LD", "Josh Manson", "RD", missing()),
+      ...pairing("B. BYRAM", 92, "LD", "J. MANSON", 89, "RD", missing()),
       valid: true,
       issues: [],
     },
     "pairing-3": {
       region: { id: "pairing-3", bounds: { x: 1, y: 1, width: 1, height: 1 } },
       recognition: { text: "fixture", provider: "fixture-ocr" },
-      ...pairing("Samuel Girard", "LD", "Erik Johnson", "RD", known(0)),
+      ...pairing("S. GIRARD", 92, "LD", "E. JOHNSON", 89, "RD", known(0)),
       valid: true,
       issues: [],
     },

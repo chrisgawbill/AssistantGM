@@ -12,10 +12,11 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "edit-lines-trial": "tsx scripts/edit-lines-trial.ts"
   },
   "dependencies": {
-    "@chrisgawbill/vision-engine": "0.1.0",
+    "@chrisgawbill/vision-engine": "0.4.0",
     "next": "^16.3.5",
     "react": "19.3.0",
     "react-dom": "19.3.0"
@@ -26,6 +27,7 @@
     "@types/react-dom": "19.3.0",
     "eslint": "9.39.5",
     "eslint-config-next": "^16.3.5",
+    "tsx": "^4.23.13",
     "typescript": "6.0.3",
     "vite": "8.3.0",
     "vitest": "5.0.1"
