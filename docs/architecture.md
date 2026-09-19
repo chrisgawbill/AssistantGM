@@ -26,9 +26,9 @@ AssistantGM does **not** own generic OCR, image preprocessing, confidence plumbi
 
 The first useful vertical slice is:
 
-1. User uploads an NHL franchise-mode screenshot.
-2. AssistantGM identifies which game-specific screen configuration should be used.
-3. AssistantGM sends the image plus generic extraction configuration to `vision-engine`.
+1. User takes or selects a phone photo of an NHL 27 Franchise Mode screen.
+2. The user-selected workflow determines the game-specific screen configuration (currently `edit-lines-defense-even-strength`); automatic screen classification is deferred.
+3. AssistantGM sends the untouched source photo plus generic extraction configuration to `vision-engine`.
 4. `vision-engine` returns normalized structured fields with confidence / uncertainty metadata.
 5. AssistantGM maps those generic fields into NHL/franchise-domain models.
 6. User can verify or correct low-confidence values.
@@ -36,6 +36,29 @@ The first useful vertical slice is:
 8. AssistantGM can later use that state for roster/lineup recommendations.
 
 The MVP should prove this path before live video or AR work begins.
+
+### Input Assumption
+
+The primary input is a handheld phone photo of a TV/monitor, not a clean game screenshot. Configuration and domain contracts must not assume that:
+
+- the game UI fills the entire source image
+- the display is square to the camera
+- absolute source-pixel coordinates (e.g. a fixed 1920×1080 frame) are stable between photos
+- lighting, glare, crop, perspective, rotation, or display artifacts are consistent
+
+Display isolation, perspective normalization, and spatial extraction are `vision-engine` responsibilities. When a real photo exposes a generic perception gap, document it as a narrow `vision-engine` follow-up rather than adding CV to AssistantGM or hard-coding source-photo coordinates.
+
+### Current Slice: Edit Lines — Defense / Even Strength
+
+- view id: `edit-lines-defense-even-strength`
+- three defensive pairings, each with explicit left/right defense slots
+- per slot: player name, displayed position/side, overall
+- per pairing: chemistry/line-impact value when available
+- every value keeps its confidence/status; missing or ambiguous values stay explicit
+- flow: `POST /api/edit-lines-photo` → application `processEditLinesPhoto` boundary → `vision-engine` wrapper → `game-config` mapping → typed lineup
+- raw provider payloads stay out of domain and UI contracts; UI never imports OCR/provider internals
+
+Real-photo trial results are recorded in `docs/nhl-edit-lines-trial.md`.
 
 ## Initial Technology Stack
 
@@ -63,6 +86,7 @@ When durable multi-user data becomes necessary, prefer PostgreSQL with Drizzle o
 - Vitest for unit/domain tests
 - React Testing Library where component behavior needs coverage
 - Playwright only when real end-to-end flows justify it
+- automated tests use deterministic mocked/generic `vision-engine` output; never commit proprietary NHL 27 imagery as fixtures (real photos are for manual evaluation only)
 
 ### Shared Engine
 

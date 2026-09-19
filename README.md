@@ -25,4 +25,4 @@ pnpm test
 pnpm build
 ```
 
-The app currently contains only a landing route and the initial source boundaries under `src/`.
+Architecture and the active slice are described in `docs/architecture.md`; work is tracked in `docs/backlog.md`.
