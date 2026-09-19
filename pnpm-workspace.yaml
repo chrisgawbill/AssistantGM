@@ -4,5 +4,4 @@ allowBuilds:
   tesseract.js: false
   unrs-resolver: true
 
-minimumReleaseAgeExclude:
-  - '@chrisgawbill/*'
+minimumReleaseAge: 0

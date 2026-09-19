@@ -455,7 +455,7 @@ Use **Forwards / Even Strength** as the second view.
 
 ## Dependency Maintenance
 
-Baseline (AG-UPG, 2026-09-18): next 16.3.5, eslint-config-next 16.3.5, react/react-dom 19.3.0, eslint 9.39.5, pnpm 11.26.0, local Node 26.8.2. pnpm `minimumReleaseAge` stays enabled; only `@chrisgawbill/*` is excluded.
+Baseline (AG-UPG, 2026-09-18): next 16.3.5, eslint-config-next 16.3.5, react/react-dom 19.3.0, eslint 9.39.5, pnpm 11.26.0, local Node 26.8.2. pnpm `minimumReleaseAge` is disabled (`0`) as of AG-DEP-1.
 
 `@chrisgawbill/vision-engine` 0.1.0 → latest is owned by **AG-5A**, not these tickets.
 

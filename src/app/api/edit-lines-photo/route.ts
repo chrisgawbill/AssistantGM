@@ -3,12 +3,21 @@ import { EDIT_LINES_WORKFLOW, type EditLinesPhotoRequest } from "../../../applic
 
 export const dynamic = "force-dynamic";
 
+function invalidRequest() {
+  return NextResponse.json({ error: "Invalid Edit Lines photo request" }, { status: 400 });
+}
+
 export async function POST(request: Request) {
-  const form = await request.formData();
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return invalidRequest();
+  }
   const photo = form.get("photo");
   const workflow = form.get("workflow");
   if (!(photo instanceof File) || workflow !== EDIT_LINES_WORKFLOW) {
-    return NextResponse.json({ error: "Invalid Edit Lines photo request" }, { status: 400 });
+    return invalidRequest();
   }
 
   const [{ ContentBoundsDetector, TesseractOcrProvider }, { processEditLinesPhotoWithVisionEngine }] = await Promise.all([
