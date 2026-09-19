@@ -463,59 +463,6 @@ Each ticket is toolchain-only: no feature changes, and `src/` edits only where a
 
 ---
 
-## AG-DEP-1 — Node runtime pin + @types/node
-
-### Goal
-
-Make the supported Node version explicit and align `@types/node` with it.
-
-### Scope
-
-- pick the target Node major (local is 26; confirm Next 16 `>=20.9.0` and Vitest 5 `^22.12 || ^24 || >=26` both accept it)
-- add `engines.node` to `package.json` (and `.nvmrc` / `.node-version` if useful for local tooling)
-- upgrade `@types/node` 22.10.2 → the latest release of the chosen Node major, pinned exactly
-
-### Constraints
-
-- do not use `@types/node` for a newer major than the runtime
-- no CI/deployment changes beyond the version pin
-
-### Acceptance Criteria
-
-- `engines.node` and `@types/node` major match
-- all standard verification commands pass
-
----
-
-## AG-DEP-2 — Vitest 2 → 5
-
-### Goal
-
-Move tests to the current Vitest major.
-
-### Dependency
-
-AG-DEP-1 (Vitest 5 peer-requires `@types/node` `^22 || >=24` and Node `^22.12 || ^24 || >=26`).
-
-### Scope
-
-- upgrade `vitest` 2.1.9 → latest 5.x, pinned exactly
-- add `vite` explicitly only if Vitest 5 requires it as an installed peer (`^6.4 || ^7 || ^8`)
-- apply the Vitest 3, 4, and 5 migration-guide changes that affect this repo (config, mocking, and environment APIs)
-- keep the existing 10 tests and their assertions; change test code only where an API changed
-
-### Constraints
-
-- no new test frameworks or coverage tooling
-- do not weaken or delete tests to get a green run
-
-### Acceptance Criteria
-
-- `pnpm test` runs on Vitest 5 with the same test count (6 files, 10 tests at baseline) all passing
-- all standard verification commands pass
-
----
-
 ## AG-DEP-3 — TypeScript 5.7 → 6.0
 
 ### Goal
