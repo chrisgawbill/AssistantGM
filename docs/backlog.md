@@ -455,35 +455,11 @@ Use **Forwards / Even Strength** as the second view.
 
 ## Dependency Maintenance
 
-Baseline (AG-UPG, 2026-09-18): next 16.3.5, eslint-config-next 16.3.5, react/react-dom 19.3.0, eslint 9.39.5, pnpm 11.26.0, local Node 26.8.2. pnpm `minimumReleaseAge` is disabled (`0`) as of AG-DEP-1.
+Baseline (AG-UPG, 2026-09-18): next 16.3.5, eslint-config-next 16.3.5, react/react-dom 19.3.0, eslint 9.39.5, typescript 6.0.3 (AG-DEP-3), pnpm 11.26.0, local Node 26.8.2. pnpm `minimumReleaseAge` is disabled (`0`) as of AG-DEP-1.
 
 `@chrisgawbill/vision-engine` 0.1.0 → latest is owned by **AG-5A**, not these tickets.
 
 Each ticket is toolchain-only: no feature changes, and `src/` edits only where a breaking API change forces them. Verification for every ticket: `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm lint`, `pnpm build`, then `pnpm start` serving `/` and `/api/edit-lines-photo`.
-
----
-
-## AG-DEP-3 — TypeScript 5.7 → 6.0
-
-### Goal
-
-Move to the newest TypeScript version that the lint toolchain supports.
-
-### Scope
-
-- upgrade `typescript` 5.7.2 → latest 6.0.x, pinned exactly
-- fix any new type errors or `tsconfig.json` deprecations surfaced by TS 6
-- confirm `next build` type-checking and `typescript-eslint` both accept the version
-
-### Constraints
-
-- **not TypeScript 7**: `eslint-config-next` 16.3.5 depends on `typescript-eslint` ^8, which peer-requires `typescript >=4.8.4 <6.1.0`
-- no loosening of `strict` or other compiler options to silence errors
-
-### Acceptance Criteria
-
-- TypeScript 6.0.x is installed with no peer-dependency warnings from `typescript-eslint`
-- all standard verification commands pass
 
 ---
 
